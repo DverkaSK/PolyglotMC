@@ -1,6 +1,24 @@
 package ru.dverkask.polyglotmc.version;
 
+/**
+ * Represents the supported Minecraft versions in the PolyglotMC library.
+ * <p>
+ * This class contains three nested enums: {@link Release}, {@link Snapshot}, and {@link PreRelease},
+ * each representing different types of Minecraft versions. All these enums implement the {@link Version} interface.
+ * </p>
+ *
+ * @author DverkaSK
+ * @version 1.0
+ * @since 1.0
+ */
 public class SupportedVersion {
+
+    /**
+     * Represents official release versions of Minecraft.
+     * <p>
+     * This enum contains all the stable release versions of Minecraft supported by PolyglotMC.
+     * </p>
+     */
     public enum Release implements Version {
         V1_21("1.21"),
         V1_20_6("1.20.6"),
@@ -92,18 +110,36 @@ public class SupportedVersion {
         V1_0("1.0"),
         ;
 
+        /**
+         * The string representation of the Minecraft release version.
+         */
         private final String version;
 
+        /**
+         * Constructs a Release enum constant with the specified version string.
+         *
+         * @param version the string representation of the Minecraft version
+         */
         Release(String version) {
             this.version = version;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String version() {
             return this.version;
         }
     }
 
+    /**
+     * Represents snapshot versions of Minecraft.
+     * <p>
+     * This enum contains all the snapshot versions of Minecraft supported by PolyglotMC.
+     * Snapshots are development versions released before official releases.
+     * </p>
+     */
     public enum Snapshot implements Version {
         SNAPSHOT_24W21A("24w21a"),
         SNAPSHOT_24W20A("24w20a"),
@@ -229,18 +265,36 @@ public class SupportedVersion {
         SNAPSHOT_16W50A("16w50a"),
         ;
 
+        /**
+         * The string representation of the Minecraft snapshot version.
+         */
         private final String version;
 
+        /**
+         * Constructs a Snapshot enum constant with the specified version string.
+         *
+         * @param version the string representation of the Minecraft snapshot version
+         */
         Snapshot(String version) {
             this.version = version;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String version() {
             return this.version;
         }
     }
 
+    /**
+     * Represents pre-release versions of Minecraft.
+     * <p>
+     * This enum contains all the pre-release versions of Minecraft supported by PolyglotMC.
+     * Pre-releases are versions released shortly before an official release, typically for final testing.
+     * </p>
+     */
     public enum PreRelease implements Version {
         V1_21_1_RC1("1.21.1-rc1"),
         V1_21_PRE3("1.21-pre3"),
@@ -302,12 +356,23 @@ public class SupportedVersion {
         V1_12_PRE2("1.12-pre2"),
         ;
 
+        /**
+         * The string representation of the Minecraft pre-release version.
+         */
         private final String version;
 
+        /**
+         * Constructs a PreRelease enum constant with the specified version string.
+         *
+         * @param version the string representation of the Minecraft pre-release version
+         */
         PreRelease(String version) {
             this.version = version;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String version() {
             return this.version;

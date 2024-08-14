@@ -1,5 +1,29 @@
 package ru.dverkask.polyglotmc.lang;
 
+/**
+ * Enumeration of supported languages in the PolyglotMC library.
+ * <p>
+ * This enum represents all the languages that are supported for translation
+ * within the PolyglotMC system. Each enum constant corresponds to a specific
+ * language or locale, identified by a unique language code.
+ * </p>
+ * <p>
+ * The language codes follow the format of language code (lowercase) followed by
+ * country code (uppercase), separated by an underscore. For example, "en_US" for
+ * English (United States). Some languages may not have a country code.
+ * </p>
+ * <p>
+ * Usage example:
+ * <pre>
+ * SupportedLanguage lang = SupportedLanguage.EN_US;
+ * String code = lang.getCode(); // Returns "en_us"
+ * </pre>
+ * </p>
+ *
+ * @author DverkaSK
+ * @version 1.0
+ * @since 1.0
+ */
 public enum SupportedLanguage {
     AF_ZA("af_za"),
     AR_SA("ar_sa"),
@@ -129,12 +153,25 @@ public enum SupportedLanguage {
     ZLM_ARAB("zlm_arab")
     ;
 
+    /**
+     * The language code associated with this language.
+     */
     private final String code;
 
+    /**
+     * Constructs a SupportedLanguage enum constant.
+     *
+     * @param code The language code for this language.
+     */
     SupportedLanguage(String code) {
         this.code = code;
     }
 
+    /**
+     * Returns the language code for this supported language.
+     *
+     * @return A string representing the language code.
+     */
     public String getCode() {
         return code;
     }
