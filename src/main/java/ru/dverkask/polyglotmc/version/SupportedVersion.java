@@ -1,5 +1,9 @@
 package ru.dverkask.polyglotmc.version;
 
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 /**
  * Represents the supported Minecraft versions in the PolyglotMC library.
  * <p>
@@ -377,5 +381,24 @@ public class SupportedVersion {
         public String version() {
             return this.version;
         }
+    }
+
+    /**
+     * Finds a Version by its string representation.
+     *
+     * @param version the string representation of the version to search for
+     * @return an Optional containing the Version if found, or an empty Optional if not found
+     */
+    public static Optional<Version> findByVersion(String version) {
+        return Stream.of(
+                        Arrays.stream(Release.values()),
+                        Arrays.stream(Snapshot.values()),
+                        Arrays.stream(PreRelease.values())
+                )
+                .flatMap(s -> s)
+                .filter(v -> v.version().equalsIgnoreCase(version))
+                .map(v -> (Version) v)
+                .findFirst();
+
     }
 }
