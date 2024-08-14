@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 public class TranslationLoader {
 
-    private static final String BASE_URL = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/lang/";
+    private static final String BASE_URL = "https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/%s/assets/minecraft/lang/%s.json";
     private static final Pattern JSON_PATTERN = Pattern.compile("\"((?:block|item)\\.minecraft\\.[^\"]+)\"\\s*:\\s*\"([^\"]+)\"");
     private final SupportedLanguage language;
     private final Version version;
@@ -38,7 +38,7 @@ public class TranslationLoader {
     }
 
     private String fetchJsonContent() throws IOException, InterruptedException {
-        String url = BASE_URL + language.getCode() + ".json";
+        String url = String.format(BASE_URL, version.version(), language.getCode());
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
