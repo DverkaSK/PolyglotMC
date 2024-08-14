@@ -1,5 +1,8 @@
 package ru.dverkask.polyglotmc.lang;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * Enumeration of supported languages in the PolyglotMC library.
  * <p>
@@ -174,5 +177,17 @@ public enum SupportedLanguage {
      */
     public String getCode() {
         return code;
+    }
+
+    /**
+     * Finds a SupportedLanguage by its code.
+     *
+     * @param code the language code to search for
+     * @return an Optional containing the SupportedLanguage if found, or an empty Optional if not found
+     */
+    public static Optional<SupportedLanguage> findByCode(String code) {
+        return Arrays.stream(SupportedLanguage.values())
+                .filter(lang -> lang.getCode().equalsIgnoreCase(code))
+                .findFirst();
     }
 }
