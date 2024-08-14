@@ -1,4 +1,0 @@
-name: PolyglotMC
-version: '${version}'
-main: ru.dverkask.polyglotmc.PolyglotMC
-api-version: '1.20'
