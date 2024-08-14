@@ -14,16 +14,25 @@ public final class Polyglot {
 
     private final Map<SupportedLanguage, TranslationProvider> translationProviders;
     private final SupportedLanguage defaultLanguage;
+    private final boolean dynamicLanguageLoading;
+    private final Version version;
 
     private Polyglot(Builder builder) {
         this.translationProviders = builder.translationProviders;
         this.defaultLanguage = builder.defaultLanguage;
+        this.dynamicLanguageLoading = builder.dynamicLanguageLoading;
+        this.version = builder.version;
     }
 
     public TranslationResult translate(Material item, SupportedLanguage language) {
         TranslationProvider provider = translationProviders.get(language);
         if (provider == null) {
-            provider = translationProviders.get(defaultLanguage);
+            if (dynamicLanguageLoading) {
+                provider = new CacheTranslationProvider(language, version);
+                translationProviders.put(language, provider);
+            } else {
+                provider = translationProviders.get(defaultLanguage);
+            }
         }
 
         Optional<String> translation = provider.getTranslation(item);
@@ -44,7 +53,7 @@ public final class Polyglot {
         private final Map<SupportedLanguage, TranslationProvider> translationProviders = new EnumMap<>(SupportedLanguage.class);
         private SupportedLanguage defaultLanguage = SupportedLanguage.EN_US;
         private Version version = SupportedVersion.Release.V1_20_4;
-
+        private boolean dynamicLanguageLoading = false;
 
         public Builder withVersion(Version version) {
             this.version = version;
@@ -65,6 +74,11 @@ public final class Polyglot {
 
         public Builder withDefaultLanguage(SupportedLanguage language) {
             this.defaultLanguage = language;
+            return this;
+        }
+
+        public Builder withDynamicLanguageLoading(boolean dynamicLanguageLoading) {
+            this.dynamicLanguageLoading = dynamicLanguageLoading;
             return this;
         }
 
