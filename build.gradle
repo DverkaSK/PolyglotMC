@@ -1,6 +1,9 @@
 plugins {
     id 'java'
+    id 'maven-publish'
 }
+
+apply plugin: 'maven-publish'
 
 group = 'ru.dverkask'
 version = '1.0'
@@ -14,6 +17,19 @@ repositories {
     maven {
         name = "sonatype"
         url = "https://oss.sonatype.org/content/groups/public/"
+    }
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
     }
 }
 
