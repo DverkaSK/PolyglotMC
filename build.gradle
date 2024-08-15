@@ -3,9 +3,6 @@ plugins {
     id 'maven-publish'
 }
 
-group = 'ru.dverkask'
-version = '1.0.4'
-
 repositories {
     mavenCentral()
     maven {
@@ -29,9 +26,6 @@ publishing {
     publications {
         maven(MavenPublication) {
             from components.java
-            groupId = 'ru.dverkask'
-            artifactId = 'polyglot'
-            version = '1.0.4'
         }
     }
 }
@@ -53,15 +47,6 @@ java {
 tasks.withType(JavaCompile).configureEach {
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release = targetJavaVersion
-    }
-}
-
-processResources {
-    def props = [version: version]
-    inputs.properties props
-    filteringCharset 'UTF-8'
-    filesMatching('plugin.yml') {
-        expand props
     }
 }
 
