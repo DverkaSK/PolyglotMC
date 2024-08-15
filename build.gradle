@@ -3,10 +3,8 @@ plugins {
     id 'maven-publish'
 }
 
-apply plugin: 'maven-publish'
-
 group = 'ru.dverkask'
-version = '1.0'
+version = '1.0.4'
 
 repositories {
     mavenCentral()
@@ -23,15 +21,17 @@ repositories {
 java {
     withSourcesJar()
     withJavadocJar()
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
+            from components.java
             groupId = 'ru.dverkask'
             artifactId = 'polyglot'
-            version = '1.0'
-            from components.java
+            version = '1.0.4'
         }
     }
 }
@@ -65,7 +65,7 @@ processResources {
     }
 }
 
-tasks.withType(Jar).configureEach {
+jar {
     archiveFileName = 'PolyglotMC.jar'
 }
 
