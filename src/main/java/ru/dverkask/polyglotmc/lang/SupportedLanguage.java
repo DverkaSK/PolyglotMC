@@ -21,7 +21,6 @@ import java.util.Optional;
  * SupportedLanguage lang = SupportedLanguage.EN_US;
  * String code = lang.getCode(); // Returns "en_us"
  * </pre>
- * </p>
  *
  * @author DverkaSK
  * @version 1.0
