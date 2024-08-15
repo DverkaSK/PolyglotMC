@@ -28,6 +28,9 @@ java {
 publishing {
     publications {
         maven(MavenPublication) {
+            groupId = 'ru.dverkask'
+            artifactId = 'polyglot'
+            version = '1.0'
             from components.java
         }
     }
