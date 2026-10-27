@@ -1,37 +1,24 @@
 plugins {
-    id 'java'
-    id 'maven-publish'
+    id 'java-library'
+    id 'com.vanniktech.maven.publish' version '0.37.0'
 }
+
+// Maven coordinates only. The Java packages stay ru.dverkask.polyglotmc: changing them
+// would break every consumer's imports, and Central checks the group, never the packages.
+group = 'sk.dverka'
+version = '2.0.1'
+description = 'Version-aware Java library for translating Minecraft names into any game language on the server.'
 
 repositories {
     mavenCentral()
     maven {
-        name = "papermc-repo"
-        url = "https://repo.papermc.io/repository/maven-public/"
-    }
-    maven {
-        name = "sonatype"
-        url = "https://oss.sonatype.org/content/groups/public/"
-    }
-}
-
-java {
-    withSourcesJar()
-    withJavadocJar()
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            from components.java
-        }
+        name = 'papermc-repo'
+        url = 'https://repo.papermc.io/repository/maven-public/'
     }
 }
 
 dependencies {
-    compileOnly "io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT"
+    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
 }
 
 def targetJavaVersion = 17
@@ -45,15 +32,61 @@ java {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
-        options.release = targetJavaVersion
-    }
+    options.encoding = 'UTF-8'
+    options.release = targetJavaVersion
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+    // Enum constants of SupportedLanguage/SupportedVersion are self-describing.
+    options.addStringOption('Xdoclint:all,-missing', '-quiet')
 }
 
 jar {
-    archiveFileName = 'PolyglotMC.jar'
+    archiveBaseName = 'PolyglotMC'
 }
 
-compileJava {
-    options.encoding = "UTF-8"
+// Maven Central: sk.dverka:polyglotmc - the full procedure is RELEASING.md. The plugin adds
+// the sources and javadoc jars Central insists on. Credentials and the signing key live in
+// ~/.gradle/gradle.properties, never in this repository:
+//   mavenCentralUsername, mavenCentralPassword            - a Central Portal user token
+//   signingInMemoryKey, signingInMemoryKeyPassword        - an ASCII-armoured GPG key
+//
+// automaticRelease = false: a Central release can never be deleted, so an upload only stages
+// the deployment, and a human presses "Publish" at https://central.sonatype.com/publishing.
+mavenPublishing {
+    coordinates(project.group.toString(), 'polyglotmc', project.version.toString())
+    publishToMavenCentral(false)
+
+    // Signing only when a key is configured, so a plain build, publishToMavenLocal and
+    // JitPack keep working without one. Central rejects an unsigned upload on its own.
+    if (providers.gradleProperty('signingInMemoryKey').isPresent()) {
+        signAllPublications()
+    }
+
+    pom {
+        name = 'PolyglotMC'
+        description = project.description
+        inceptionYear = '2024'
+        url = 'https://github.com/DverkaSK/PolyglotMC'
+        licenses {
+            license {
+                name = 'MIT License'
+                url = 'https://opensource.org/licenses/MIT'
+                distribution = 'repo'
+            }
+        }
+        developers {
+            developer {
+                id = 'DverkaSK'
+                name = 'DverkaSK'
+                url = 'https://github.com/DverkaSK'
+            }
+        }
+        scm {
+            url = 'https://github.com/DverkaSK/PolyglotMC'
+            connection = 'scm:git:https://github.com/DverkaSK/PolyglotMC.git'
+            developerConnection = 'scm:git:ssh://git@github.com/DverkaSK/PolyglotMC.git'
+        }
+    }
 }
