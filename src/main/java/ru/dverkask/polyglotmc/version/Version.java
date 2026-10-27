@@ -1,5 +1,7 @@
 package ru.dverkask.polyglotmc.version;
 
+import java.util.Objects;
+
 /**
  * Represents a Minecraft version in the PolyglotMC library.
  * <p>
@@ -26,4 +28,18 @@ public interface Version {
      * @return a {@link String} representing the Minecraft version
      */
     String version();
+
+    /**
+     * Creates a version from an arbitrary string.
+     * <p>
+     * Useful for versions that are not yet listed in {@link SupportedVersion}.
+     * </p>
+     *
+     * @param version the string representation of the Minecraft version, e.g. {@code "1.21.11"}
+     * @return a {@link Version} with the given string representation
+     */
+    static Version of(String version) {
+        Objects.requireNonNull(version, "version");
+        return SupportedVersion.findByVersion(version).orElse(() -> version);
+    }
 }

@@ -46,13 +46,39 @@ Polyglot polyglot = new Polyglot.Builder()
         .build();
 ```
 
-### Translating an item
+### Translating game objects
+
+Anything that implements Adventure's `Translatable` can be translated:
+`Material`, `ItemStack`, `EntityType`, `Enchantment`, `PotionEffectType`, `Biome`, `Attribute`, `GameRule` and more.
 
 ```java
-TranslationResult result = polyglot.translate(Material.DIAMOND_SWORD, SupportedLanguage.RU_RU);
-
-System.out.println(result.translatedName()); // Алмазный меч
+polyglot.translate(Material.DIAMOND_SWORD, SupportedLanguage.RU_RU).translatedName();  // Алмазный меч
+polyglot.translate(Enchantment.SHARPNESS, SupportedLanguage.RU_RU).translatedName();    // Острота
+polyglot.translate(EntityType.CREEPER, SupportedLanguage.RU_RU).translatedName();       // Крипер
+polyglot.translate(PotionEffectType.SPEED, SupportedLanguage.RU_RU).translatedName();   // Скорость
 ```
+
+### Translating raw keys
+
+```java
+polyglot.translate("gamerule.keepInventory", SupportedLanguage.RU_RU).translatedName(); // Сохранение инвентаря при смерти
+```
+
+If a key is missing in the requested language, the default language translation is returned
+(or the key itself), and `TranslationResult#isTranslated()` is `false`.
+
+### Versions
+
+Any version from `SupportedVersion` can be used, as well as versions that are not listed yet:
+
+```java
+new Polyglot.Builder().withVersion(Version.of("26.1.2"));
+```
+
+Only Minecraft **1.13 and newer** are supported (older versions use a different language file format).
+
+> Language files are downloaded from GitHub when `build()` is called (or on first use with dynamic loading),
+> so consider building `Polyglot` asynchronously.
 
 ### Dynamic Language Loading
 

@@ -1,78 +1,81 @@
 package ru.dverkask.polyglotmc.loader;
 
-import org.bukkit.Material;
 import ru.dverkask.polyglotmc.lang.SupportedLanguage;
 import ru.dverkask.polyglotmc.version.Version;
 
-import java.util.EnumMap;
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * Manages translations for Minecraft items and blocks across different languages and versions.
+ * Manages translations for Minecraft across different languages and versions.
  * <p>
  * This class implements the Singleton pattern to ensure a single instance of translation management
- * throughout the application. It provides methods to retrieve translations for specific languages
- * and Minecraft versions, caching results for improved performance.
+ * throughout the application. Loaded language files are cached per language and version,
+ * so several {@link ru.dverkask.polyglotmc.api.Polyglot} instances share the same data.
+ * Failed loads are not cached and will be retried on the next request.
  * </p>
  *
  * @author DverkaSK
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  */
 public final class TranslationManager {
 
+    private static final Logger LOGGER = Logger.getLogger("PolyglotMC");
+
     /** The single instance of TranslationManager. */
-    private volatile static TranslationManager instance;
+    private static final TranslationManager INSTANCE = new TranslationManager();
 
     /**
-     * A map storing translations for each supported language.
-     * The outer map uses {@link SupportedLanguage} as keys and the inner map uses {@link Material} as keys.
+     * A map storing translations for each language and version pair.
+     * The outer map uses {@code "<version>/<language>"} as keys and the inner map uses translation keys as keys.
      */
-    private final Map<SupportedLanguage, Map<Material, String>> translations;
+    private final Map<String, Map<String, String>> translations = new ConcurrentHashMap<>();
 
     /**
      * Private constructor to prevent direct instantiation.
-     * Initializes the translations map.
      */
     private TranslationManager() {
-        this.translations = new EnumMap<>(SupportedLanguage.class);
     }
 
     /**
      * Returns the single instance of TranslationManager.
-     * Creates a new instance if one doesn't exist.
      *
      * @return The singleton instance of {@link TranslationManager}
      */
     public static TranslationManager getInstance() {
-        if (instance == null) {
-            instance = new TranslationManager();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     /**
      * Retrieves translations for a specific language and Minecraft version.
-     * If translations for the given language are not cached, they will be loaded.
+     * If translations are not cached, they will be loaded.
      *
      * @param language The {@link SupportedLanguage} for which to retrieve translations
      * @param version The {@link Version} of Minecraft for which to retrieve translations
-     * @return A {@link Map} where keys are {@link Material} objects and values are their translated names
+     * @return A {@link Map} where keys are translation keys and values are their translated strings.
+     *         Returns an empty map if loading failed.
      */
-    public Map<Material, String> getTranslations(SupportedLanguage language, Version version) {
-        return translations.computeIfAbsent(language, lang -> loadTranslations(lang, version));
-    }
+    public Map<String, String> getTranslations(SupportedLanguage language, Version version) {
+        String cacheKey = version.version() + "/" + language.getCode();
+        Map<String, String> cached = translations.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
 
-    /**
-     * Loads translations for a specific language and Minecraft version.
-     * This method is called internally when translations for a language are not yet cached.
-     *
-     * @param language The {@link SupportedLanguage} for which to load translations
-     * @param version The {@link Version} of Minecraft for which to load translations
-     * @return A {@link Map} where keys are {@link Material} objects and values are their translated names
-     */
-    private Map<Material, String> loadTranslations(SupportedLanguage language, Version version) {
-        TranslationLoader loader = new TranslationLoader(language, version);
-        return loader.loadTranslations();
+        try {
+            Map<String, String> loaded = Map.copyOf(new TranslationLoader(language, version).loadTranslations());
+            Map<String, String> previous = translations.putIfAbsent(cacheKey, loaded);
+            return previous != null ? previous : loaded;
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Failed to load translations for " + cacheKey, e);
+            return Map.of();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return Map.of();
+        }
     }
 }

@@ -1,17 +1,15 @@
 package ru.dverkask.polyglotmc.api;
 
-import org.bukkit.Material;
-
 import java.util.Optional;
 
 /**
  * The TranslationProvider interface defines the contract for providing translations
- * of Minecraft item names in the PolyglotMC library.
+ * of Minecraft translation keys in the PolyglotMC library.
  * <p>
- * Implementations of this interface are responsible for retrieving translations
- * for given Minecraft materials. The primary use of this interface is within the
- * {@link ru.dverkask.polyglotmc.api.Polyglot} class to provide multilingual support
- * for Minecraft items.
+ * Implementations of this interface are responsible for resolving a translation key
+ * (e.g. {@code item.minecraft.diamond_sword} or {@code enchantment.minecraft.sharpness})
+ * into a human-readable string. The primary use of this interface is within the
+ * {@link ru.dverkask.polyglotmc.api.Polyglot} class.
  * </p>
  * <p>
  * The default implementation provided by the library is
@@ -20,7 +18,7 @@ import java.util.Optional;
  * </p>
  *
  * @author DverkaSK
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  * @see ru.dverkask.polyglotmc.api.Polyglot
  * @see ru.dverkask.polyglotmc.provider.CacheTranslationProvider CacheTranslationProvider
@@ -28,17 +26,12 @@ import java.util.Optional;
 public interface TranslationProvider {
 
     /**
-     * Retrieves the translation for a given Minecraft material.
-     * <p>
-     * This method should return an {@link Optional} containing the translated
-     * name of the item if a translation is available, or an empty Optional if
-     * no translation is found.
-     * </p>
+     * Retrieves the translation for a given translation key.
      *
-     * @param item The {@link Material} for which to retrieve the translation.
-     * @return An {@link Optional} containing the translated name if available,
+     * @param key The translation key, e.g. {@code item.minecraft.diamond_sword}.
+     * @return An {@link Optional} containing the translated string if available,
      *         or an empty Optional if no translation is found.
-     * @throws NullPointerException if the provided item is null.
+     * @throws NullPointerException if the provided key is null.
      */
-    Optional<String> getTranslation(Material item);
+    Optional<String> getTranslation(String key);
 }

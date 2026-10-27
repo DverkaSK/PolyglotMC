@@ -1,6 +1,5 @@
 package ru.dverkask.polyglotmc.provider;
 
-import org.bukkit.Material;
 import ru.dverkask.polyglotmc.api.TranslationProvider;
 import ru.dverkask.polyglotmc.lang.SupportedLanguage;
 import ru.dverkask.polyglotmc.loader.TranslationManager;
@@ -10,44 +9,39 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A caching implementation of {@link TranslationProvider} that provides translations for Minecraft materials.
+ * A caching implementation of {@link TranslationProvider}.
  * <p>
- * This class uses {@link TranslationManager} to load and cache translations for a specific language and game version.
- * It provides fast access to translations by storing them in memory after initial loading.
+ * This class uses {@link TranslationManager} to load and cache the full language file for a specific
+ * language and game version. It provides fast access to translations by storing them in memory after initial loading.
  * </p>
  *
  * @author DverkaSK
- * @version 1.0
+ * @version 2.0
  * @since 1.0
  */
 public class CacheTranslationProvider implements TranslationProvider {
 
     /**
-     * A map containing cached translations for Minecraft materials.
-     * The key is the {@link Material} and the value is its translated name.
+     * A map containing cached translations.
+     * The key is the translation key and the value is its translated string.
      */
-    private final Map<Material, String> translations;
+    private final Map<String, String> translations;
 
     /**
      * Constructs a new CacheTranslationProvider for the specified language and game version.
      *
      * @param language The {@link SupportedLanguage} for which to provide translations
      * @param version The {@link Version} of Minecraft for which to provide translations
-     * @throws IllegalArgumentException if the language or version is not supported
      */
     public CacheTranslationProvider(SupportedLanguage language, Version version) {
         this.translations = TranslationManager.getInstance().getTranslations(language, version);
     }
 
     /**
-     * Retrieves the translation for the specified Minecraft material.
-     *
-     * @param item The {@link Material} for which to get the translation
-     * @return An {@link Optional} containing the translated name of the material,
-     *         or an empty Optional if no translation is available
+     * {@inheritDoc}
      */
     @Override
-    public Optional<String> getTranslation(Material item) {
-        return Optional.ofNullable(translations.get(item));
+    public Optional<String> getTranslation(String key) {
+        return Optional.ofNullable(translations.get(key));
     }
 }
