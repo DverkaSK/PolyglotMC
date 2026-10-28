@@ -30,6 +30,21 @@ public interface Version {
     String version();
 
     /**
+     * Tells whether PolyglotMC can load language files of this version.
+     * <p>
+     * Only Minecraft 1.13 (snapshot 17w43a) and newer ship JSON language files; older versions use
+     * the legacy {@code .lang} format and are not supported. Version strings of an unknown format
+     * are assumed to be supported.
+     * </p>
+     *
+     * @return {@code true} if language files of this version can be loaded
+     * @since 2.1
+     */
+    default boolean isSupported() {
+        return SupportedVersion.hasJsonLanguageFiles(version());
+    }
+
+    /**
      * Creates a version from an arbitrary string.
      * <p>
      * Useful for versions that are not yet listed in {@link SupportedVersion}.

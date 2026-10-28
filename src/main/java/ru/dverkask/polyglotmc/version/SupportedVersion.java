@@ -2,6 +2,8 @@ package ru.dverkask.polyglotmc.version;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
@@ -10,12 +12,22 @@ import java.util.stream.Stream;
  * This class contains three nested enums: {@link Release}, {@link Snapshot}, and {@link PreRelease},
  * each representing different types of Minecraft versions. All these enums implement the {@link Version} interface.
  * </p>
+ * <p>
+ * Constants of versions older than 1.13 (and snapshot 17w43a) are deprecated: those versions ship language files
+ * in the legacy {@code .lang} format, which cannot be loaded. See {@link Version#isSupported()}.
+ * </p>
  *
  * @author DverkaSK
- * @version 1.0
+ * @version 2.1
  * @since 1.0
  */
 public class SupportedVersion {
+
+    /** Releases and pre-releases: {@code 1.21.4}, {@code 1.20.5-pre3}, {@code 26.1}. */
+    private static final Pattern RELEASE = Pattern.compile("(\\d+)\\.(\\d+)(?:\\.\\d+)?(?:-.+)?");
+
+    /** Snapshots: {@code 24w21a}. */
+    private static final Pattern SNAPSHOT = Pattern.compile("(\\d{2})w(\\d{2})[a-z]", Pattern.CASE_INSENSITIVE);
 
     /**
      * Represents official release versions of Minecraft.
@@ -75,58 +87,111 @@ public class SupportedVersion {
         V1_13_2("1.13.2"),
         V1_13_1("1.13.1"),
         V1_13("1.13"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_12_2("1.12.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_12_1("1.12.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_12("1.12"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_11_2("1.11.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_11_1("1.11.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_11("1.11"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_10_2("1.10.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_10_1("1.10.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_10("1.10"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_9_4("1.9.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_9_3("1.9.3"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_9_2("1.9.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_9_1("1.9.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_9("1.9"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_9("1.8.9"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_8("1.8.8"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_7("1.8.7"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_6("1.8.6"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_5("1.8.5"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_4("1.8.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_3("1.8.3"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_2("1.8.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8_1("1.8.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_8("1.8"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_10("1.7.10"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_9("1.7.9"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_8("1.7.8"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_7("1.7.7"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_6("1.7.6"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_5("1.7.5"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_4("1.7.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_3("1.7.3"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_7_2("1.7.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_6_4("1.6.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_6_2("1.6.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_6_1("1.6.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_5_2("1.5.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_5_1("1.5.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_7("1.4.7"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_6("1.4.6"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_5("1.4.5"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_4("1.4.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_3("1.4.3"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_4_2("1.4.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_3_2("1.3.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_3_1("1.3.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_2_5("1.2.5"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_2_4("1.2.4"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_2_3("1.2.3"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_2_2("1.2.2"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_2_1("1.2.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_1("1.1"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_0("1.0"),
         ;
 
@@ -221,15 +286,17 @@ public class SupportedVersion {
         SNAPSHOT_21W15A("21w15a"),
         SNAPSHOT_21W14A("21w14a"),
         SNAPSHOT_21W13A("21w13a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_13W43A("13w43a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_13W37A("13w37a"),
         SNAPSHOT_18W45A("18w45a"),
         SNAPSHOT_18W44A("18w44a"),
-        SNAPSHOT_21W10A("21W10A"),
-        SNAPSHOT_21W08B("21W08B"),
-        SNAPSHOT_21W08A("21W08A"),
-        SNAPSHOT_21W07A("21W07A"),
-        SNAPSHOT_19W14B("19W14B"),
+        SNAPSHOT_21W10A("21w10a"),
+        SNAPSHOT_21W08B("21w08b"),
+        SNAPSHOT_21W08A("21w08a"),
+        SNAPSHOT_21W07A("21w07a"),
+        SNAPSHOT_19W14B("19w14b"),
         SNAPSHOT_21W06A("21w06a"),
         SNAPSHOT_21W05A("21w05a"),
         SNAPSHOT_21W03A("21w03a"),
@@ -263,25 +330,45 @@ public class SupportedVersion {
         SNAPSHOT_19W08A("19w08a"),
         SNAPSHOT_18W50A("18w50a"),
         SNAPSHOT_18W02A("18w02a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W18B("17w18b"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W17A("17w17a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W16A("17w16a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W15A("17w15a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W14A("17w14a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W13B("17w13b"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W13A("17w13a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_17W06A("17w06a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W32B("16w32b"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W33A("16w33a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W35A("16w35a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W36A("16w36a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W38A("16w38a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W39C("16w39c"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W40A("16w40a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W41A("16w41a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W42A("16w42a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W43A("16w43a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W44A("16w44a"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         SNAPSHOT_16W50A("16w50a"),
         ;
 
@@ -372,7 +459,9 @@ public class SupportedVersion {
         V1_16_PRE2("1.16-pre2"),
         V1_15_1_PRE1("1.15.1-pre1"),
         V1_14_4_PRE7("1.14.4-pre7"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_12_PRE5("1.12-pre5"),
+        @Deprecated(since = "2.1.0", forRemoval = true)
         V1_12_PRE2("1.12-pre2"),
         ;
 
@@ -416,5 +505,25 @@ public class SupportedVersion {
                 .map(v -> (Version) v)
                 .findFirst();
 
+    }
+
+    /**
+     * Tells whether a version ships JSON language files, i.e. is 1.13 / snapshot 17w43a or newer.
+     * Strings of an unknown format are assumed to be supported.
+     */
+    static boolean hasJsonLanguageFiles(String version) {
+        Matcher release = RELEASE.matcher(version);
+        if (release.matches()) {
+            int major = Integer.parseInt(release.group(1));
+            int minor = Integer.parseInt(release.group(2));
+            return major > 1 || minor >= 13;
+        }
+        Matcher snapshot = SNAPSHOT.matcher(version);
+        if (snapshot.matches()) {
+            int year = Integer.parseInt(snapshot.group(1));
+            int week = Integer.parseInt(snapshot.group(2));
+            return year > 17 || (year == 17 && week >= 43);
+        }
+        return true;
     }
 }
