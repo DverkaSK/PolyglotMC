@@ -1,19 +1,23 @@
 package ru.dverkask.polyglotmc.api;
 
 import net.kyori.adventure.translation.Translatable;
+import org.bukkit.Bukkit;
 import ru.dverkask.polyglotmc.lang.SupportedLanguage;
+import ru.dverkask.polyglotmc.loader.TranslationManager;
 import ru.dverkask.polyglotmc.provider.CacheTranslationProvider;
 import ru.dverkask.polyglotmc.version.SupportedVersion;
 import ru.dverkask.polyglotmc.version.Version;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The main class of the PolyglotMC library, providing server-side translation of Minecraft names
@@ -25,11 +29,12 @@ import java.util.Set;
  * </p>
  * <p>
  * This class uses the Builder pattern for configuration and instantiation. It manages a collection of
- * {@link TranslationProvider}s for different languages.
+ * {@link TranslationProvider}s for different languages. It is thread-safe, and translating never blocks
+ * on the network.
  * </p>
  *
  * @author DverkaSK
- * @version 2.0
+ * @version 2.1
  * @since 1.0
  */
 public final class Polyglot {
@@ -54,11 +59,17 @@ public final class Polyglot {
      */
     private final Version version;
 
-    private Polyglot(Builder builder) {
-        this.translationProviders = Collections.synchronizedMap(new EnumMap<>(builder.translationProviders));
+    /**
+     * The directory language files are cached in, or {@code null}.
+     */
+    private final Path cacheDirectory;
+
+    private Polyglot(Builder builder, Version version) {
+        this.translationProviders = new ConcurrentHashMap<>(builder.translationProviders);
         this.defaultLanguage = builder.defaultLanguage;
         this.dynamicLanguageLoading = builder.dynamicLanguageLoading;
-        this.version = builder.version;
+        this.version = version;
+        this.cacheDirectory = builder.cacheDirectory;
     }
 
     /**
@@ -150,12 +161,19 @@ public final class Polyglot {
         return defaultLanguage;
     }
 
+    /**
+     * Returns the provider of a language. With dynamic loading, a missing language is loaded in the background
+     * and has no provider until the load finishes, so the caller falls back to the default language meanwhile.
+     */
     private Optional<TranslationProvider> getProvider(SupportedLanguage language) {
-        if (dynamicLanguageLoading) {
-            return Optional.of(translationProviders.computeIfAbsent(language,
-                    lang -> new CacheTranslationProvider(lang, version)));
+        TranslationProvider provider = translationProviders.get(language);
+        if (provider == null && dynamicLanguageLoading
+                && TranslationManager.getInstance().request(language, version, cacheDirectory).isPresent()) {
+            // The language file is loaded already, so creating the provider does not block.
+            provider = translationProviders.computeIfAbsent(language,
+                    lang -> new CacheTranslationProvider(lang, version, cacheDirectory));
         }
-        return Optional.ofNullable(translationProviders.get(language));
+        return Optional.ofNullable(provider);
     }
 
     /**
@@ -169,21 +187,29 @@ public final class Polyglot {
         private final Map<SupportedLanguage, TranslationProvider> translationProviders = new EnumMap<>(SupportedLanguage.class);
         private final Set<SupportedLanguage> languages = EnumSet.noneOf(SupportedLanguage.class);
         private SupportedLanguage defaultLanguage = SupportedLanguage.EN_US;
-        private Version version = SupportedVersion.Release.V1_20_4;
+        private Version version;
         private boolean dynamicLanguageLoading = false;
+        private Path cacheDirectory;
 
         /**
          * Sets the Minecraft version for translations.
          * <p>
-         * If not set, the default version is {@link SupportedVersion.Release#V1_20_4}.
+         * If not set, the version of the running server is used ({@link Bukkit#getMinecraftVersion()}),
+         * or {@link SupportedVersion.Release#V1_20_4} outside a server.
          * Versions that are not listed in {@link SupportedVersion} can be created with {@link Version#of(String)}.
          * </p>
          *
          * @param version The Minecraft version to use.
          * @return This Builder instance.
+         * @throws IllegalArgumentException if the version is older than 1.13, see {@link Version#isSupported()}.
          */
         public Builder withVersion(Version version) {
-            this.version = Objects.requireNonNull(version, "version");
+            Objects.requireNonNull(version, "version");
+            if (!version.isSupported()) {
+                throw new IllegalArgumentException("Minecraft " + version.version()
+                        + " uses the legacy .lang format, only 1.13 and newer are supported");
+            }
+            this.version = version;
             return this;
         }
 
@@ -200,9 +226,12 @@ public final class Polyglot {
          *
          * @param languages The languages to add.
          * @return This Builder instance.
+         * @throws NullPointerException if a language is null.
          */
         public Builder withLanguages(SupportedLanguage... languages) {
-            this.languages.addAll(Arrays.asList(languages));
+            for (SupportedLanguage language : languages) {
+                this.languages.add(Objects.requireNonNull(language, "language"));
+            }
             return this;
         }
 
@@ -216,9 +245,11 @@ public final class Polyglot {
          * @param language The language for the provider.
          * @param provider The custom translation provider.
          * @return This Builder instance.
+         * @throws NullPointerException if the language or provider is null.
          */
         public Builder withTranslationProvider(SupportedLanguage language, TranslationProvider provider) {
-            this.translationProviders.put(language, provider);
+            this.translationProviders.put(Objects.requireNonNull(language, "language"),
+                    Objects.requireNonNull(provider, "provider"));
             return this;
         }
 
@@ -239,8 +270,9 @@ public final class Polyglot {
         /**
          * Enables or disables dynamic language loading.
          * <p>
-         * When enabled, Polyglot will load translations for languages
-         * that were not initially specified on first use.
+         * When enabled, Polyglot loads translations for languages that were not initially specified
+         * on first use. The load runs in the background: until it finishes, translations into that language
+         * fall back to the default language and {@link TranslationResult#isTranslated()} is {@code false}.
          * </p>
          * <p>
          * By default, dynamic language loading is disabled.
@@ -255,6 +287,22 @@ public final class Polyglot {
         }
 
         /**
+         * Caches downloaded language files in a directory, so they are read from disk on later starts
+         * instead of being downloaded again, e.g. {@code plugin.getDataFolder().toPath().resolve("lang")}.
+         * <p>
+         * By default, nothing is cached on disk.
+         * </p>
+         *
+         * @param cacheDirectory The directory to cache language files in, or {@code null} to disable the cache.
+         * @return This Builder instance.
+         * @since 2.1
+         */
+        public Builder withCacheDirectory(Path cacheDirectory) {
+            this.cacheDirectory = cacheDirectory;
+            return this;
+        }
+
+        /**
          * Builds and returns a new Polyglot instance.
          * <p>
          * Language files of all specified languages are downloaded here, so this call may block.
@@ -263,18 +311,44 @@ public final class Polyglot {
          *
          * @return A new Polyglot instance configured with this builder.
          * @throws IllegalStateException if no languages are specified or if the default language is not included.
+         * @throws UncheckedIOException  if the language file of a specified language could not be loaded.
          */
         public Polyglot build() {
-            for (SupportedLanguage language : languages) {
-                translationProviders.computeIfAbsent(language, lang -> new CacheTranslationProvider(lang, version));
-            }
-            if (translationProviders.isEmpty()) {
+            if (languages.isEmpty() && translationProviders.isEmpty()) {
                 throw new IllegalStateException("At least one language must be specified");
             }
-            if (!translationProviders.containsKey(defaultLanguage)) {
+            if (!languages.contains(defaultLanguage) && !translationProviders.containsKey(defaultLanguage)) {
                 throw new IllegalStateException("Default language must be included in specified languages");
             }
-            return new Polyglot(this);
+
+            Version resolvedVersion = version != null ? version : serverVersion();
+            Map<SupportedLanguage, TranslationProvider> loaded = new EnumMap<>(SupportedLanguage.class);
+            for (SupportedLanguage language : languages) {
+                if (translationProviders.containsKey(language)) {
+                    continue;
+                }
+                try {
+                    TranslationManager.getInstance().load(language, resolvedVersion, cacheDirectory);
+                } catch (IOException e) {
+                    throw new UncheckedIOException("Failed to load translations for "
+                            + language.getCode() + " / " + resolvedVersion.version(), e);
+                }
+                loaded.put(language, new CacheTranslationProvider(language, resolvedVersion, cacheDirectory));
+            }
+            // The builder stays reusable: providers created here are not added to it.
+            Polyglot polyglot = new Polyglot(this, resolvedVersion);
+            polyglot.translationProviders.putAll(loaded);
+            return polyglot;
+        }
+
+        private static Version serverVersion() {
+            if (Bukkit.getServer() != null) {
+                Version running = Version.of(Bukkit.getMinecraftVersion());
+                if (running.isSupported()) {
+                    return running;
+                }
+            }
+            return SupportedVersion.Release.V1_20_4;
         }
     }
 }

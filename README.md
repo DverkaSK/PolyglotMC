@@ -130,10 +130,24 @@ Any version from `SupportedVersion` can be used, as well as versions that are no
 new Polyglot.Builder().withVersion(Version.of("26.1.2"));
 ```
 
-Only Minecraft **1.13 and newer** are supported (older versions use a different language file format).
+If no version is set, the version of the running server is used.
 
-> Language files are downloaded from GitHub when `build()` is called (or on first use with dynamic loading),
-> so consider building `Polyglot` asynchronously.
+Only Minecraft **1.13 and newer** are supported (older versions use a different language file format):
+`withVersion` throws `IllegalArgumentException` for them, and their `SupportedVersion` constants are deprecated.
+
+> Language files are downloaded from GitHub when `build()` is called, so consider building `Polyglot` asynchronously.
+> If a file cannot be loaded, `build()` throws `UncheckedIOException`.
+
+### Caching language files on disk
+
+Without a cache directory the files are downloaded on every start. With one, they are downloaded once:
+
+```java
+Polyglot polyglot = new Polyglot.Builder()
+        .withLanguages(SupportedLanguage.EN_US, SupportedLanguage.RU_RU)
+        .withCacheDirectory(plugin.getDataFolder().toPath().resolve("lang"))
+        .build();
+```
 
 ### Dynamic Language Loading
 
@@ -144,5 +158,9 @@ Polyglot polyglot = new Polyglot.Builder()
         .withDynamicLanguageLoading(true)
         .build();
 ```
+
+A language that was not specified is loaded in the background on first use, so `translate` never blocks.
+Until it is loaded, the default language translation is returned and `isTranslated()` is `false`.
+A failed load is retried, at most once a minute.
 
 ---
