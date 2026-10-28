@@ -6,7 +6,7 @@ plugins {
 // Maven coordinates only. The Java packages stay ru.dverkask.polyglotmc: changing them
 // would break every consumer's imports, and Central checks the group, never the packages.
 group = 'sk.dverka'
-version = '2.0.1'
+version = '2.1.0'
 description = 'Version-aware Java library for translating Minecraft names into any game language on the server.'
 
 repositories {

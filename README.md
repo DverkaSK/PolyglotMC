@@ -43,7 +43,7 @@ repositories {
 }
 
 dependencies {
-    implementation("sk.dverka:polyglotmc:2.0.1")
+    implementation("sk.dverka:polyglotmc:2.1.0")
 }
 ```
 
@@ -55,7 +55,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'sk.dverka:polyglotmc:2.0.1'
+    implementation 'sk.dverka:polyglotmc:2.1.0'
 }
 ```
 
@@ -65,7 +65,7 @@ dependencies {
 <dependency>
     <groupId>sk.dverka</groupId>
     <artifactId>polyglotmc</artifactId>
-    <version>2.0.1</version>
+    <version>2.1.0</version>
 </dependency>
 ```
 
@@ -74,7 +74,7 @@ At runtime the library has to reach your plugin: either shade it into the plugin
 
 ```yaml
 libraries:
-  - sk.dverka:polyglotmc:2.0.1
+  - sk.dverka:polyglotmc:2.1.0
 ```
 
 The classes live in the `ru.dverkask.polyglotmc` package whatever the coordinates are,
